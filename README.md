@@ -69,7 +69,9 @@
 
 ## 📸 Screenshots
 
-*Screenshots will be added soon*
+<p align="center">
+  <img src="screenshots/Sahulat_Banner.png" width="100%" />
+</p>
 
 ## ⚖️ Disclaimer
 
