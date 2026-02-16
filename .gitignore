@@ -1,0 +1,36 @@
+# Gradle files
+.gradle/
+build/
+
+# IntelliJ IDEA files
+.idea/
+*.iml
+*.iws
+*.ipr
+out/
+
+# Android Studio files
+captures/
+local.properties
+.externalNativeBuild/
+.cxx/
+
+# Built artifacts
+*.apk
+*.ap_
+*.aab
+*.dex
+*.class
+
+# Keystore files
+*.jks
+*.keystore
+
+# System files
+.DS_Store
+Thumbs.db
+
+# Log files
+*.log
+build_output.txt
+build_log_ascii.txt

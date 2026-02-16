@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">Sahulat</string>
+    <string name="app_slogan">Aapki Hifazat, Hamari Priority</string>
+    <string name="home">Home</string>
+    <string name="favorites">Favorites</string>
+    <string name="about">About</string>
+    <string name="search_services">Search services…</string>
+    <string name="no_services_found">No services found</string>
+    <string name="no_favorites">No favorite services</string>
+    <string name="add_to_favorites">Tap the heart icon to add services to favorites</string>
+    <string name="send_sms">Send SMS</string>
+    <string name="call">Call</string>
+    <string name="dial_code">Dial Code</string>
+    <string name="copy">Copy</string>
+    <string name="copied">Copied: %s</string>
+    <string name="language">Language</string>
+    <string name="english">English</string>
+    <string name="urdu">اردو</string>
+    <string name="disclaimer_title">Important Disclaimer</string>
+    <string name="version">Version</string>
+    <string name="total_services">Total Services</string>
+    <string name="languages">Languages</string>
+    <string name="made_for_pakistan">Made for Pakistan ❤️</string>
+</resources>

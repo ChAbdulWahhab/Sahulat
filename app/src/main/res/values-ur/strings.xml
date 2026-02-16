@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">سہولت</string>
+    <string name="app_slogan">آپ کی حفاظت، ہماری ترجیح</string>
+    <string name="home">ہوم</string>
+    <string name="favorites">پسندیدہ</string>
+    <string name="about">معلومات</string>
+    <string name="search_services">خدمات تلاش کریں…</string>
+    <string name="no_services_found">کوئی خدمت نہیں ملی</string>
+    <string name="no_favorites">کوئی پسندیدہ خدمت نہیں</string>
+    <string name="add_to_favorites">خدمات کو پسندیدہ میں شامل کرنے کے لیے دل کے آئیکن پر ٹیپ کریں</string>
+    <string name="send_sms">ایس ایم ایس</string>
+    <string name="call">کال کریں</string>
+    <string name="dial_code">ڈائل کریں</string>
+    <string name="copy">کاپی</string>
+    <string name="copied">کاپی: %s</string>
+    <string name="language">زبان</string>
+    <string name="english">English</string>
+    <string name="urdu">اردو</string>
+    <string name="disclaimer_title">اہم اعلان</string>
+    <string name="version">ورژن</string>
+    <string name="total_services">کل خدمات</string>
+    <string name="languages">زبانیں</string>
+    <string name="made_for_pakistan">پاکستان کے لیے بنایا گیا ❤️</string>
+</resources>
