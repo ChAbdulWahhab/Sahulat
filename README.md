@@ -61,7 +61,7 @@
 ### Installation
 1. Clone the repository:
    ```bash
-   git clone https://github.com/ChAbdulWahhab/Sahulat-App.git
+   git clone https://github.com/ChAbdulWahhab/Sahulat.git
    ```
 2. Open the project in Android Studio.
 3. Let Gradle sync complete.
