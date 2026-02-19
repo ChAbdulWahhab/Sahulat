@@ -54,6 +54,7 @@ private val DarkColorScheme = darkColorScheme(
 @Composable
 fun PublicServiceAppTheme(
     darkTheme: Boolean = isSystemInDarkTheme(),
+    language: String = "en", // Default to English
     content: @Composable () -> Unit
 ) {
     val colorScheme = if (darkTheme) DarkColorScheme else LightColorScheme
@@ -62,16 +63,19 @@ fun PublicServiceAppTheme(
     if (!view.isInEditMode) {
         SideEffect {
             val window = (view.context as Activity).window
-            window.statusBarColor = colorScheme.surface.toArgb()
             val insetsController = WindowCompat.getInsetsController(window, view)
+            window.statusBarColor = colorScheme.surface.toArgb()
             insetsController.isAppearanceLightStatusBars = !darkTheme
             insetsController.isAppearanceLightNavigationBars = !darkTheme
         }
     }
 
+    // Select typography based on language
+    val typography = getTypography(language)
+
     MaterialTheme(
         colorScheme = colorScheme,
-        typography = Typography,
+        typography = typography,
         content = content
     )
 }

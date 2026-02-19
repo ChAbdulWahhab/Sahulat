@@ -33,4 +33,7 @@ Thumbs.db
 # Log files
 *.log
 build_output.txt
-build_log_ascii.txt
+
+# Local Archives
+archived_versions/
+brand_assets/sahulat-high-resolution-logo-transparent.png

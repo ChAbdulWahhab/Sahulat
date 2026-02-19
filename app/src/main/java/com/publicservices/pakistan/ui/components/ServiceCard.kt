@@ -31,28 +31,32 @@ fun ServiceCard(
     Card(
         modifier = modifier
             .fillMaxWidth()
-            .padding(horizontal = 16.dp, vertical = 6.dp),
-        shape = androidx.compose.foundation.shape.RoundedCornerShape(12.dp), // Standardized to 12dp
-        elevation = CardDefaults.cardElevation(defaultElevation = 2.dp),
+            .padding(horizontal = 16.dp, vertical = 8.dp),
+        shape = androidx.compose.foundation.shape.RoundedCornerShape(16.dp), // Modern 16dp rounding
+        elevation = CardDefaults.cardElevation(defaultElevation = 0.dp), // Flat design with border is more modern
+        border = androidx.compose.foundation.BorderStroke(
+            1.dp, 
+            MaterialTheme.colorScheme.outline.copy(alpha = 0.1f)
+        ),
         colors = CardDefaults.cardColors(
             containerColor = MaterialTheme.colorScheme.surface
         )
     ) {
         Column(
-            modifier = Modifier.padding(20.dp) // Increased padding to 20dp
+            modifier = Modifier.padding(16.dp)
         ) {
             // Header: Icon + Title/Description + Favorite
             Row(
                 modifier = Modifier.fillMaxWidth(),
-                verticalAlignment = Alignment.Top // Align to top for better hierarchy
+                verticalAlignment = Alignment.CenterVertically
             ) {
-                // Service Icon
+                // Service Icon (Circle background for modern look)
                 Box(
                     modifier = Modifier
-                        .size(44.dp)
+                        .size(48.dp)
                         .background(
-                            color = MaterialTheme.colorScheme.primary.copy(alpha = 0.08f),
-                            shape = androidx.compose.foundation.shape.RoundedCornerShape(8.dp)
+                            color = MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.4f),
+                            shape = androidx.compose.foundation.shape.CircleShape
                         ),
                     contentAlignment = Alignment.Center
                 ) {
@@ -65,7 +69,7 @@ fun ServiceCard(
                         },
                         contentDescription = null,
                         tint = MaterialTheme.colorScheme.primary,
-                        modifier = Modifier.size(22.dp)
+                        modifier = Modifier.size(24.dp)
                     )
                 }
 
@@ -75,23 +79,21 @@ fun ServiceCard(
                     Text(
                         text = service.getName(language),
                         style = MaterialTheme.typography.titleMedium,
-                        fontWeight = FontWeight.Medium, // Medium for titles
+                        fontWeight = FontWeight.Bold,
                         color = MaterialTheme.colorScheme.onSurface
                     )
-                    Spacer(modifier = Modifier.height(4.dp))
                     Text(
                         text = service.getDescription(language),
-                        style = MaterialTheme.typography.bodyMedium,
-                        fontWeight = FontWeight.Normal, // Regular for secondary
+                        style = MaterialTheme.typography.bodySmall,
                         color = MaterialTheme.colorScheme.onSurfaceVariant,
-                        lineHeight = 18.sp
+                        maxLines = 1,
+                        overflow = androidx.compose.ui.text.style.TextOverflow.Ellipsis
                     )
                 }
                 
                 IconButton(
                     onClick = onFavoriteToggle,
-                    modifier = Modifier
-                        .minimumInteractiveComponentSize() // Ensures 48dp+ (satisfies 44dp requirement)
+                    modifier = Modifier.size(40.dp)
                 ) {
                     Icon(
                         imageVector = if (service.isFavorite) 
@@ -99,47 +101,43 @@ fun ServiceCard(
                         else 
                             Icons.Outlined.FavoriteBorder,
                         contentDescription = "Favorite",
-                        tint = if (service.isFavorite) AccentRed else MaterialTheme.colorScheme.outline,
-                        modifier = Modifier.size(24.dp)
+                        tint = if (service.isFavorite) AccentRed else MaterialTheme.colorScheme.outline.copy(alpha = 0.6f),
+                        modifier = Modifier.size(22.dp)
                     )
                 }
             }
             
-            // Prominent Instruction Banner for non-technical users
+            // Instruction Banner (Softer design)
             val instructions = service.getInstructions(language)
             if (instructions.isNotEmpty()) {
-                Spacer(modifier = Modifier.height(16.dp))
+                Spacer(modifier = Modifier.height(12.dp))
                 Surface(
                     modifier = Modifier.fillMaxWidth(),
-                    color = MaterialTheme.colorScheme.primary.copy(alpha = 0.12f),
-                    shape = androidx.compose.foundation.shape.RoundedCornerShape(8.dp),
-                    border = androidx.compose.foundation.BorderStroke(
-                        1.dp, 
-                        MaterialTheme.colorScheme.primary.copy(alpha = 0.2f)
-                    )
+                    color = MaterialTheme.colorScheme.primary.copy(alpha = 0.05f),
+                    shape = androidx.compose.foundation.shape.RoundedCornerShape(8.dp)
                 ) {
                     Row(
-                        modifier = Modifier.padding(12.dp),
+                        modifier = Modifier.padding(10.dp),
                         verticalAlignment = Alignment.CenterVertically
                     ) {
                         Icon(
                             imageVector = Icons.Default.Info,
                             contentDescription = null,
-                            tint = MaterialTheme.colorScheme.primary,
-                            modifier = Modifier.size(20.dp)
+                            tint = MaterialTheme.colorScheme.primary.copy(alpha = 0.7f),
+                            modifier = Modifier.size(16.dp)
                         )
-                        Spacer(modifier = Modifier.width(12.dp))
+                        Spacer(modifier = Modifier.width(10.dp))
                         Text(
                             text = instructions,
-                            style = MaterialTheme.typography.bodyMedium,
-                            fontWeight = FontWeight.Bold,
+                            style = MaterialTheme.typography.labelMedium,
+                            fontWeight = FontWeight.SemiBold,
                             color = MaterialTheme.colorScheme.primary
                         )
                     }
                 }
             }
             
-            Spacer(modifier = Modifier.height(20.dp))
+            Spacer(modifier = Modifier.height(16.dp))
             
             // Bottom Section: Phone Number + Call/Sms Buttons
             Row(
@@ -147,69 +145,69 @@ fun ServiceCard(
                 verticalAlignment = Alignment.CenterVertically,
                 horizontalArrangement = Arrangement.SpaceBetween
             ) {
-                // Phone Number with Copy Icon (Larger touch target)
-                Row(
-                    verticalAlignment = Alignment.CenterVertically,
-                    modifier = Modifier
-                        .background(
-                            color = MaterialTheme.colorScheme.background,
-                            shape = androidx.compose.foundation.shape.RoundedCornerShape(8.dp)
-                        )
-                        .clickable(onClick = onCopy)
-                        .padding(horizontal = 12.dp, vertical = 8.dp)
+                // Phone Number with Copy (Modern Badge look)
+                Surface(
+                    onClick = onCopy,
+                    color = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f),
+                    shape = androidx.compose.foundation.shape.RoundedCornerShape(32.dp)
                 ) {
-                    Text(
-                        text = service.serviceNumber,
-                        style = MaterialTheme.typography.titleMedium,
-                        fontWeight = FontWeight.Black, // Bold dark neutral
-                        color = MaterialTheme.colorScheme.onBackground,
-                        letterSpacing = 0.5.sp
-                    )
-                    Spacer(modifier = Modifier.width(8.dp))
-                    Icon(
-                        imageVector = Icons.Default.ContentCopy,
-                        contentDescription = "Copy",
-                        modifier = Modifier.size(16.dp),
-                        tint = MaterialTheme.colorScheme.primary.copy(alpha = 0.6f)
-                    )
+                    Row(
+                        verticalAlignment = Alignment.CenterVertically,
+                        modifier = Modifier.padding(horizontal = 12.dp, vertical = 6.dp)
+                    ) {
+                        Text(
+                            text = service.serviceNumber,
+                            style = MaterialTheme.typography.bodyLarge,
+                            fontWeight = FontWeight.ExtraBold,
+                            color = MaterialTheme.colorScheme.onSurface,
+                            letterSpacing = 1.sp
+                        )
+                        Spacer(modifier = Modifier.width(8.dp))
+                        Icon(
+                            imageVector = Icons.Default.ContentCopy,
+                            contentDescription = "Copy",
+                            modifier = Modifier.size(14.dp),
+                            tint = MaterialTheme.colorScheme.primary
+                        )
+                    }
                 }
 
-                // Action Buttons (Condensed)
+                // Action Buttons
                 Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                     if (service.serviceType == ServiceType.SMS || service.serviceType == ServiceType.BOTH) {
-                        IconButton(
+                        Surface(
                             onClick = onSendSms,
-                            modifier = Modifier
-                                .size(44.dp)
-                                .background(
-                                    color = MaterialTheme.colorScheme.primary,
-                                    shape = androidx.compose.foundation.shape.CircleShape
-                                )
+                            modifier = Modifier.size(44.dp),
+                            shape = androidx.compose.foundation.shape.CircleShape,
+                            color = MaterialTheme.colorScheme.primary,
+                            shadowElevation = 2.dp
                         ) {
-                            Icon(
-                                imageVector = Icons.Default.Send,
-                                contentDescription = "SMS",
-                                tint = Color.White,
-                                modifier = Modifier.size(20.dp)
-                            )
+                            Box(contentAlignment = Alignment.Center) {
+                                Icon(
+                                    imageVector = Icons.Default.Send,
+                                    contentDescription = "SMS",
+                                    tint = Color.White,
+                                    modifier = Modifier.size(18.dp)
+                                )
+                            }
                         }
                     }
                     if (service.serviceType == ServiceType.CALL || service.serviceType == ServiceType.USSD || service.serviceType == ServiceType.BOTH) {
-                        IconButton(
+                        Surface(
                             onClick = onCall,
-                            modifier = Modifier
-                                .size(44.dp)
-                                .background(
-                                    color = MaterialTheme.colorScheme.primary,
-                                    shape = androidx.compose.foundation.shape.CircleShape
-                                )
+                            modifier = Modifier.size(44.dp),
+                            shape = androidx.compose.foundation.shape.CircleShape,
+                            color = MaterialTheme.colorScheme.primary,
+                            shadowElevation = 2.dp
                         ) {
-                            Icon(
-                                imageVector = if (service.serviceType == ServiceType.USSD) Icons.Default.Dialpad else Icons.Default.Call,
-                                contentDescription = "Call",
-                                tint = Color.White,
-                                modifier = Modifier.size(20.dp)
-                            )
+                            Box(contentAlignment = Alignment.Center) {
+                                Icon(
+                                    imageVector = if (service.serviceType == ServiceType.USSD) Icons.Default.Dialpad else Icons.Default.Call,
+                                    contentDescription = "Call",
+                                    tint = Color.White,
+                                    modifier = Modifier.size(18.dp)
+                                )
+                            }
                         }
                     }
                 }

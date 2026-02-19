@@ -6,14 +6,14 @@ plugins {
 
 android {
     namespace = "com.publicservices.pakistan"
-    compileSdk = 34
+    compileSdk = 35
     
     defaultConfig {
         applicationId = "com.publicservices.pakistan"
         minSdk = 24
-        targetSdk = 34
-        versionCode = 1
-        versionName = "1.0.0"
+        targetSdk = 35
+        versionCode = 5
+        versionName = "1.3.1"
         
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
         vectorDrawables {
@@ -21,9 +21,19 @@ android {
         }
     }
     
+    signingConfigs {
+        create("release") {
+            storeFile = file("../sahulat-release.jks")
+            storePassword = "Sahulat@2026"
+            keyAlias = "sahulat-alias"
+            keyPassword = "Sahulat@2026"
+        }
+    }
+    
     buildTypes {
         release {
             isMinifyEnabled = true
+            signingConfig = signingConfigs.getByName("release")
             proguardFiles(
                 getDefaultProguardFile("proguard-android-optimize.txt"),
                 "proguard-rules.pro"

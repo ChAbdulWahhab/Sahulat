@@ -18,6 +18,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import com.publicservices.pakistan.data.model.ServiceCategory
 import com.publicservices.pakistan.ui.components.CategoryChip
 import com.publicservices.pakistan.ui.components.SearchBar
@@ -42,15 +43,26 @@ fun HomeScreen(
         topBar = {
             TopAppBar(
                 title = { 
-                    androidx.compose.foundation.Image(
-                        painter = androidx.compose.ui.res.painterResource(
-                            id = context.resources.getIdentifier("sahulat_logo", "drawable", context.packageName)
-                        ),
-                        contentDescription = "Sahulat",
-                        modifier = Modifier
-                            .height(48.dp) // Increased from 32dp for better visibility
-                            .padding(vertical = 4.dp)
-                    )
+                    Row(
+                        modifier = Modifier.padding(vertical = 4.dp),
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        androidx.compose.foundation.Image(
+                            painter = androidx.compose.ui.res.painterResource(
+                                id = context.resources.getIdentifier("sahulat_logo_wide", "drawable", context.packageName)
+                            ),
+                            contentDescription = null,
+                            modifier = Modifier.height(44.dp)
+                        )
+                        Spacer(modifier = Modifier.width(12.dp))
+                        Text(
+                            text = "Sahulat",
+                            style = MaterialTheme.typography.headlineMedium,
+                            fontWeight = FontWeight.Bold,
+                            color = MaterialTheme.colorScheme.primary,
+                            letterSpacing = 0.5.sp
+                        )
+                    }
                 },
                 actions = {
                     Row(verticalAlignment = Alignment.CenterVertically) {
@@ -152,22 +164,32 @@ fun HomeScreen(
                     contentPadding = PaddingValues(bottom = 24.dp)
                 ) {
                     items(services, key = { it.id }) { service ->
-                        ServiceCard(
-                            service = service,
-                            language = currentLanguage,
-                            onSendSms = {
-                                IntentHelper.sendSms(context, service.serviceNumber)
-                            },
-                            onCall = {
-                                IntentHelper.makeCall(context, service.serviceNumber)
-                            },
-                            onCopy = {
-                                IntentHelper.copyToClipboard(context, service.serviceNumber)
-                            },
-                            onFavoriteToggle = {
-                                viewModel.toggleFavorite(service.id, service.isFavorite)
-                            }
-                        )
+                        androidx.compose.animation.AnimatedVisibility(
+                            visible = true,
+                            enter = androidx.compose.animation.fadeIn(
+                                animationSpec = androidx.compose.animation.core.tween(500)
+                            ) + androidx.compose.animation.slideInVertically(
+                                initialOffsetY = { it / 2 },
+                                animationSpec = androidx.compose.animation.core.tween(500)
+                            )
+                        ) {
+                            ServiceCard(
+                                service = service,
+                                language = currentLanguage,
+                                onSendSms = {
+                                    IntentHelper.sendSms(context, service.serviceNumber)
+                                },
+                                onCall = {
+                                    IntentHelper.makeCall(context, service.serviceNumber)
+                                },
+                                onCopy = {
+                                    IntentHelper.copyToClipboard(context, service.serviceNumber)
+                                },
+                                onFavoriteToggle = {
+                                    viewModel.toggleFavorite(service.id, service.isFavorite)
+                                }
+                            )
+                        }
                     }
                 }
             }

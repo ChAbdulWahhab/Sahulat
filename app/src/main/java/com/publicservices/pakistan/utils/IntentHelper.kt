@@ -11,8 +11,8 @@ object IntentHelper {
     
     fun sendSms(context: Context, number: String, body: String = "") {
         try {
-            val intent = Intent(Intent.ACTION_SENDTO).apply {
-                data = Uri.parse("smsto:$number")
+            val intent = Intent(Intent.ACTION_VIEW).apply {
+                data = Uri.parse("sms:$number")
                 if (body.isNotEmpty()) {
                     putExtra("sms_body", body)
                 }
