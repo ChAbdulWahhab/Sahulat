@@ -1,5 +1,7 @@
 package com.publicservices.pakistan.ui.components
 
+import androidx.compose.animation.*
+import androidx.compose.animation.core.*
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
@@ -7,16 +9,21 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.*
 import androidx.compose.material.icons.outlined.FavoriteBorder
 import androidx.compose.material3.*
-import androidx.compose.runtime.Composable
+import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.scale
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalHapticFeedback
+import androidx.compose.ui.hapticfeedback.HapticFeedbackType
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.compose.foundation.isSystemInDarkTheme
 import com.publicservices.pakistan.data.model.Service
 import com.publicservices.pakistan.data.model.ServiceType
 import com.publicservices.pakistan.ui.theme.AccentRed
+import com.publicservices.pakistan.ui.theme.SurfaceContainerLow
 
 @Composable
 fun ServiceCard(
@@ -28,18 +35,29 @@ fun ServiceCard(
     onFavoriteToggle: () -> Unit,
     modifier: Modifier = Modifier
 ) {
+    var isExpanded by remember { mutableStateOf(false) }
+    val haptic = LocalHapticFeedback.current
+
+    // Animation for card expansion
+    val cardElevation by animateFloatAsState(
+        targetValue = if (isExpanded) 8f else 0f,
+        animationSpec = spring(
+            dampingRatio = Spring.DampingRatioMediumBouncy,
+            stiffness = Spring.StiffnessLow
+        ),
+        label = "card_elevation"
+    )
+    
     Card(
         modifier = modifier
             .fillMaxWidth()
-            .padding(horizontal = 16.dp, vertical = 8.dp),
-        shape = androidx.compose.foundation.shape.RoundedCornerShape(16.dp), // Modern 16dp rounding
-        elevation = CardDefaults.cardElevation(defaultElevation = 0.dp), // Flat design with border is more modern
-        border = androidx.compose.foundation.BorderStroke(
-            1.dp, 
-            MaterialTheme.colorScheme.outline.copy(alpha = 0.1f)
-        ),
+            .padding(horizontal = 16.dp, vertical = 8.dp)
+            .clickable { isExpanded = !isExpanded },
+        shape = androidx.compose.foundation.shape.RoundedCornerShape(24.dp), // 24dp as per requirements
+        elevation = CardDefaults.cardElevation(defaultElevation = cardElevation.dp),
+        border = androidx.compose.foundation.BorderStroke(0.dp, Color.Transparent),
         colors = CardDefaults.cardColors(
-            containerColor = MaterialTheme.colorScheme.surface
+            containerColor = if (isSystemInDarkTheme()) MaterialTheme.colorScheme.surface else SurfaceContainerLow
         )
     ) {
         Column(
@@ -92,7 +110,10 @@ fun ServiceCard(
                 }
                 
                 IconButton(
-                    onClick = onFavoriteToggle,
+                    onClick = {
+                        haptic.performHapticFeedback(HapticFeedbackType.LongPress)
+                        onFavoriteToggle()
+                    },
                     modifier = Modifier.size(40.dp)
                 ) {
                     Icon(
@@ -101,7 +122,7 @@ fun ServiceCard(
                         else 
                             Icons.Outlined.FavoriteBorder,
                         contentDescription = "Favorite",
-                        tint = if (service.isFavorite) AccentRed else MaterialTheme.colorScheme.outline.copy(alpha = 0.6f),
+                        tint = if (service.isFavorite) AccentRed else MaterialTheme.colorScheme.primary,
                         modifier = Modifier.size(22.dp)
                     )
                 }
@@ -137,77 +158,81 @@ fun ServiceCard(
                 }
             }
             
-            Spacer(modifier = Modifier.height(16.dp))
-            
-            // Bottom Section: Phone Number + Call/Sms Buttons
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                verticalAlignment = Alignment.CenterVertically,
-                horizontalArrangement = Arrangement.SpaceBetween
+            // Phone Number Section (Always visible)
+            Spacer(modifier = Modifier.height(12.dp))
+            Surface(
+                onClick = { haptic.performHapticFeedback(HapticFeedbackType.LongPress); onCopy() },
+                color = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f),
+                shape = androidx.compose.foundation.shape.RoundedCornerShape(32.dp)
             ) {
-                // Phone Number with Copy (Modern Badge look)
-                Surface(
-                    onClick = onCopy,
-                    color = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f),
-                    shape = androidx.compose.foundation.shape.RoundedCornerShape(32.dp)
+                Row(
+                    verticalAlignment = Alignment.CenterVertically,
+                    modifier = Modifier.padding(horizontal = 12.dp, vertical = 8.dp)
                 ) {
-                    Row(
-                        verticalAlignment = Alignment.CenterVertically,
-                        modifier = Modifier.padding(horizontal = 12.dp, vertical = 6.dp)
-                    ) {
-                        Text(
-                            text = service.serviceNumber,
-                            style = MaterialTheme.typography.bodyLarge,
-                            fontWeight = FontWeight.ExtraBold,
-                            color = MaterialTheme.colorScheme.onSurface,
-                            letterSpacing = 1.sp
-                        )
-                        Spacer(modifier = Modifier.width(8.dp))
-                        Icon(
-                            imageVector = Icons.Default.ContentCopy,
-                            contentDescription = "Copy",
-                            modifier = Modifier.size(14.dp),
-                            tint = MaterialTheme.colorScheme.primary
-                        )
-                    }
+                    Text(
+                        text = service.serviceNumber,
+                        style = MaterialTheme.typography.bodyLarge,
+                        fontWeight = FontWeight.ExtraBold,
+                        color = MaterialTheme.colorScheme.onSurface,
+                        letterSpacing = 1.sp
+                    )
+                    Spacer(modifier = Modifier.width(8.dp))
+                    Icon(
+                        imageVector = Icons.Default.ContentCopy,
+                        contentDescription = "Copy",
+                        modifier = Modifier.size(16.dp),
+                        tint = MaterialTheme.colorScheme.primary
+                    )
                 }
-
-                // Action Buttons
-                Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                    if (service.serviceType == ServiceType.SMS || service.serviceType == ServiceType.BOTH) {
-                        Surface(
-                            onClick = onSendSms,
-                            modifier = Modifier.size(44.dp),
-                            shape = androidx.compose.foundation.shape.CircleShape,
-                            color = MaterialTheme.colorScheme.primary,
-                            shadowElevation = 2.dp
-                        ) {
-                            Box(contentAlignment = Alignment.Center) {
-                                Icon(
-                                    imageVector = Icons.Default.Send,
-                                    contentDescription = "SMS",
-                                    tint = Color.White,
-                                    modifier = Modifier.size(18.dp)
-                                )
-                            }
+            }
+            
+            // Expandable Action Buttons Section
+            AnimatedVisibility(
+                visible = isExpanded,
+                enter = fadeIn(animationSpec = tween(300)) + 
+                       scaleIn(initialScale = 0.8f, animationSpec = spring(
+                           dampingRatio = Spring.DampingRatioMediumBouncy,
+                           stiffness = Spring.StiffnessLow
+                       )),
+                exit = fadeOut(animationSpec = tween(200)) + 
+                      scaleOut(targetScale = 0.8f, animationSpec = tween(200))
+            ) {
+                Column(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(top = 16.dp),
+                    horizontalAlignment = Alignment.CenterHorizontally,
+                    verticalArrangement = Arrangement.spacedBy(12.dp)
+                ) {
+                    // Action Buttons Row
+                    Row(
+                        horizontalArrangement = Arrangement.spacedBy(16.dp),
+                        modifier = Modifier.fillMaxWidth()
+                    ) {
+                        // Call Button
+                        if (service.serviceType == ServiceType.CALL || 
+                            service.serviceType == ServiceType.USSD || 
+                            service.serviceType == ServiceType.BOTH) {
+                            ActionButton(
+                                icon = if (service.serviceType == ServiceType.USSD) 
+                                    Icons.Default.Dialpad 
+                                else 
+                                    Icons.Default.Call,
+                                label = if (language == "ur") "کال" else "Call",
+                                onClick = { haptic.performHapticFeedback(HapticFeedbackType.LongPress); onCall() },
+                                modifier = Modifier.weight(1f)
+                            )
                         }
-                    }
-                    if (service.serviceType == ServiceType.CALL || service.serviceType == ServiceType.USSD || service.serviceType == ServiceType.BOTH) {
-                        Surface(
-                            onClick = onCall,
-                            modifier = Modifier.size(44.dp),
-                            shape = androidx.compose.foundation.shape.CircleShape,
-                            color = MaterialTheme.colorScheme.primary,
-                            shadowElevation = 2.dp
-                        ) {
-                            Box(contentAlignment = Alignment.Center) {
-                                Icon(
-                                    imageVector = if (service.serviceType == ServiceType.USSD) Icons.Default.Dialpad else Icons.Default.Call,
-                                    contentDescription = "Call",
-                                    tint = Color.White,
-                                    modifier = Modifier.size(18.dp)
-                                )
-                            }
+                        
+                        // Message/SMS Button
+                        if (service.serviceType == ServiceType.SMS || 
+                            service.serviceType == ServiceType.BOTH) {
+                            ActionButton(
+                                icon = Icons.Default.Send,
+                                label = if (language == "ur") "پیغام" else "Message",
+                                onClick = { haptic.performHapticFeedback(HapticFeedbackType.LongPress); onSendSms() },
+                                modifier = Modifier.weight(1f)
+                            )
                         }
                     }
                 }
@@ -218,28 +243,50 @@ fun ServiceCard(
 
 @Composable
 private fun ActionButton(
-    text: String,
     icon: androidx.compose.ui.graphics.vector.ImageVector,
+    label: String,
     onClick: () -> Unit,
     modifier: Modifier = Modifier
 ) {
-    Button(
+    // Scale animation for button
+    val scale by animateFloatAsState(
+        targetValue = 1f,
+        animationSpec = spring(
+            dampingRatio = Spring.DampingRatioMediumBouncy,
+            stiffness = Spring.StiffnessMedium
+        ),
+        label = "button_scale"
+    )
+    
+    Surface(
         onClick = onClick,
-        modifier = modifier.height(48.dp),
-        shape = androidx.compose.foundation.shape.RoundedCornerShape(12.dp),
-        contentPadding = PaddingValues(horizontal = 16.dp),
-        elevation = ButtonDefaults.buttonElevation(defaultElevation = 0.dp)
+        modifier = modifier
+            .height(56.dp)
+            .scale(scale),
+        shape = androidx.compose.foundation.shape.RoundedCornerShape(16.dp),
+        color = MaterialTheme.colorScheme.primary,
+        shadowElevation = 4.dp
     ) {
-        Icon(
-            imageVector = icon,
-            contentDescription = null,
-            modifier = Modifier.size(18.dp)
-        )
-        Spacer(Modifier.width(8.dp))
-        Text(
-            text = text,
-            style = MaterialTheme.typography.labelLarge,
-            fontWeight = FontWeight.Bold
-        )
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(horizontal = 16.dp),
+            horizontalArrangement = Arrangement.Center,
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            Icon(
+                imageVector = icon,
+                contentDescription = label,
+                tint = Color.White,
+                modifier = Modifier.size(20.dp)
+            )
+            Spacer(modifier = Modifier.width(8.dp))
+            Text(
+                text = label,
+                style = MaterialTheme.typography.labelLarge,
+                fontWeight = FontWeight.Bold,
+                color = Color.White
+            )
+        }
     }
 }

@@ -25,3 +25,6 @@ val OnSurfaceVariantDark = Color(0xFF9CA3AF)
 val AccentRed = Color(0xFFEF4444) // Premium red
 val AccentBlue = Color(0xFF3B82F6) // Premium blue
 val SurfaceVariant = Color(0xFFF3F4F6)
+
+// Airy / fresh light container (5% Pakistan Green tint, off-white)
+val SurfaceContainerLow = Color(0xFFF0FBF7)
