@@ -12,8 +12,8 @@ android {
         applicationId = "com.publicservices.pakistan"
         minSdk = 24
         targetSdk = 35
-        versionCode = 5
-        versionName = "1.3.1"
+        versionCode = 6
+        versionName = "1.3.2"
         
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
         vectorDrawables {
@@ -90,6 +90,12 @@ dependencies {
     // ViewModel
     implementation("androidx.lifecycle:lifecycle-viewmodel-compose:2.7.0")
     implementation("androidx.lifecycle:lifecycle-runtime-compose:2.7.0")
+    
+    // WorkManager for notifications
+    implementation("androidx.work:work-runtime-ktx:2.9.0")
+    
+    // Permissions
+    implementation("com.google.accompanist:accompanist-permissions:0.34.0")
     
     // Testing
     testImplementation("junit:junit:4.13.2")

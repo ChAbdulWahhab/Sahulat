@@ -1,16 +1,21 @@
 package com.publicservices.pakistan.ui.home
 
+import android.content.Context
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.publicservices.pakistan.data.model.Service
 import com.publicservices.pakistan.data.model.ServiceCategory
 import com.publicservices.pakistan.data.repository.ServiceRepository
+import com.publicservices.pakistan.utils.PreferencesManager
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.launch
 
 @OptIn(ExperimentalCoroutinesApi::class)
-class HomeViewModel(private val repository: ServiceRepository) : ViewModel() {
+class HomeViewModel(
+    private val repository: ServiceRepository,
+    private val context: Context? = null
+) : ViewModel() {
     
     private val _searchQuery = MutableStateFlow("")
     val searchQuery: StateFlow<String> = _searchQuery.asStateFlow()
@@ -23,6 +28,18 @@ class HomeViewModel(private val repository: ServiceRepository) : ViewModel() {
 
     private val _isDarkMode = MutableStateFlow(false)
     val isDarkMode: StateFlow<Boolean> = _isDarkMode.asStateFlow()
+    
+    val searchHistory: StateFlow<List<String>> = flow {
+        if (context != null) {
+            emit(PreferencesManager.getSearchHistory(context).take(8))
+        } else {
+            emit(emptyList())
+        }
+    }.stateIn(
+        scope = viewModelScope,
+        started = SharingStarted.WhileSubscribed(5000),
+        initialValue = emptyList()
+    )
     
     val services: StateFlow<List<Service>> = combine(
         _searchQuery,
@@ -43,6 +60,17 @@ class HomeViewModel(private val repository: ServiceRepository) : ViewModel() {
     
     fun updateSearchQuery(query: String) {
         _searchQuery.value = query
+        // Save to search history if query is not empty
+        if (query.isNotBlank() && context != null) {
+            PreferencesManager.addToSearchHistory(context, query)
+        }
+    }
+    
+    fun selectFromHistory(query: String) {
+        _searchQuery.value = query
+        if (context != null) {
+            PreferencesManager.addToSearchHistory(context, query)
+        }
     }
     
     fun selectCategory(category: ServiceCategory) {

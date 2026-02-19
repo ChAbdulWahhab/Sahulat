@@ -33,6 +33,7 @@ Thumbs.db
 # Log files
 *.log
 build_output.txt
+build_error.txt
 
 # Local Archives
 archived_versions/
