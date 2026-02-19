@@ -1,10 +1,14 @@
 package com.publicservices.pakistan
 
+import android.graphics.RenderEffect
+import android.graphics.Shader
+import android.os.Build
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
-import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.BorderStroke
+import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Favorite
 import androidx.compose.material.icons.filled.Home
@@ -12,6 +16,9 @@ import androidx.compose.material.icons.filled.Info
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.asComposeRenderEffect
+import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.publicservices.pakistan.data.local.ServiceDatabase
@@ -41,9 +48,13 @@ class MainActivity : ComponentActivity() {
                     }
                 }
             )
+            val currentLanguage by homeViewModel.currentLanguage.collectAsState()
             val isDarkMode by homeViewModel.isDarkMode.collectAsState()
 
-            PublicServiceAppTheme(darkTheme = isDarkMode) {
+            PublicServiceAppTheme(
+                darkTheme = isDarkMode,
+                languageCode = currentLanguage // Pass language for typography
+            ) {
                 MainApp(repository, homeViewModel)
             }
         }
@@ -67,9 +78,85 @@ fun MainApp(repository: ServiceRepository, homeViewModel: HomeViewModel) {
     
     Scaffold(
         bottomBar = {
+            GlassyBottomNavBar(
+                selectedTab = selectedTab,
+                onTabSelected = { selectedTab = it },
+                currentLanguage = currentLanguage
+            )
+        }
+    ) { paddingValues ->
+        Box(modifier = Modifier.padding(bottom = 0.dp)) { // Content goes under floating bar
+            when (selectedTab) {
+                0 -> HomeScreen(
+                    viewModel = homeViewModel,
+                    modifier = Modifier.padding(bottom = 0.dp) // Specific padding handling
+                )
+                1 -> FavoritesScreen(
+                    viewModel = favoritesViewModel,
+                    currentLanguage = currentLanguage,
+                    modifier = Modifier.padding(bottom = 0.dp)
+                )
+                2 -> AboutScreen(
+                    currentLanguage = currentLanguage,
+                    modifier = Modifier.padding(bottom = 0.dp)
+                )
+            }
+        }
+    }
+}
+
+@Composable
+fun GlassyBottomNavBar(
+    selectedTab: Int,
+    onTabSelected: (Int) -> Unit,
+    currentLanguage: String
+) {
+    // Check if dark mode by comparing background color
+    val isDarkMode = MaterialTheme.colorScheme.background == Color(0xFF030712)
+    
+    // Glassy blur effect - works on API 31+ with RenderEffect, fallback for older versions
+    val blurModifier = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
+        Modifier.graphicsLayer {
+            renderEffect = RenderEffect
+                .createBlurEffect(25f, 25f, Shader.TileMode.CLAMP)
+                .asComposeRenderEffect()
+        }
+    } else {
+        Modifier // Fallback: use semi-transparent background
+    }
+    
+    // Background color based on theme - glassy effect with transparency
+    val glassyBackground = if (isDarkMode) {
+        // Dark mode - semi-transparent dark gray
+        Color(0xFF1F2937).copy(alpha = 0.85f)
+    } else {
+        // Light mode - semi-transparent white
+        Color(0xFFFFFFFF).copy(alpha = 0.85f)
+    }
+    
+    Box(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(horizontal = 16.dp, vertical = 16.dp)
+    ) {
+        // Glassy background with blur
+        Surface(
+            modifier = blurModifier
+                .fillMaxWidth()
+                .height(72.dp),
+            shape = RoundedCornerShape(24.dp),
+            color = glassyBackground,
+            tonalElevation = 8.dp,
+            shadowElevation = 12.dp,
+            border = BorderStroke(
+                1.dp,
+                MaterialTheme.colorScheme.outline.copy(alpha = 0.1f)
+            )
+        ) {
             NavigationBar(
-                containerColor = MaterialTheme.colorScheme.surface,
-                tonalElevation = 8.dp
+                containerColor = Color.Transparent,
+                tonalElevation = 0.dp,
+                modifier = Modifier.height(72.dp)
             ) {
                 NavigationBarItem(
                     icon = { 
@@ -79,12 +166,20 @@ fun MainApp(repository: ServiceRepository, homeViewModel: HomeViewModel) {
                             modifier = Modifier.size(26.dp)
                         ) 
                     },
-                    label = { Text(if (currentLanguage == "ur") "ہوم" else "Home") },
+                    label = { 
+                        Text(
+                            if (currentLanguage == "ur") "ہوم" else "Home", 
+                            style = MaterialTheme.typography.labelSmall
+                        ) 
+                    },
                     selected = selectedTab == 0,
-                    onClick = { selectedTab = 0 },
+                    onClick = { onTabSelected(0) },
                     colors = NavigationBarItemDefaults.colors(
                         selectedIconColor = MaterialTheme.colorScheme.primary,
-                        unselectedIconColor = Gray
+                        selectedTextColor = MaterialTheme.colorScheme.primary,
+                        unselectedIconColor = Gray,
+                        unselectedTextColor = Gray,
+                        indicatorColor = MaterialTheme.colorScheme.primary.copy(alpha = 0.15f)
                     )
                 )
                 NavigationBarItem(
@@ -95,12 +190,20 @@ fun MainApp(repository: ServiceRepository, homeViewModel: HomeViewModel) {
                             modifier = Modifier.size(26.dp)
                         ) 
                     },
-                    label = { Text(if (currentLanguage == "ur") "پسندیدہ" else "Favorites") },
+                    label = { 
+                        Text(
+                            if (currentLanguage == "ur") "پسندیدہ" else "Favorites", 
+                            style = MaterialTheme.typography.labelSmall
+                        ) 
+                    },
                     selected = selectedTab == 1,
-                    onClick = { selectedTab = 1 },
+                    onClick = { onTabSelected(1) },
                     colors = NavigationBarItemDefaults.colors(
                         selectedIconColor = MaterialTheme.colorScheme.primary,
-                        unselectedIconColor = Gray
+                        selectedTextColor = MaterialTheme.colorScheme.primary,
+                        unselectedIconColor = Gray,
+                        unselectedTextColor = Gray,
+                        indicatorColor = MaterialTheme.colorScheme.primary.copy(alpha = 0.15f)
                     )
                 )
                 NavigationBarItem(
@@ -111,31 +214,23 @@ fun MainApp(repository: ServiceRepository, homeViewModel: HomeViewModel) {
                             modifier = Modifier.size(26.dp)
                         ) 
                     },
-                    label = { Text(if (currentLanguage == "ur") "معلومات" else "About") },
+                    label = { 
+                        Text(
+                            if (currentLanguage == "ur") "معلومات" else "About", 
+                            style = MaterialTheme.typography.labelSmall
+                        ) 
+                    },
                     selected = selectedTab == 2,
-                    onClick = { selectedTab = 2 },
+                    onClick = { onTabSelected(2) },
                     colors = NavigationBarItemDefaults.colors(
                         selectedIconColor = MaterialTheme.colorScheme.primary,
-                        unselectedIconColor = Gray
+                        selectedTextColor = MaterialTheme.colorScheme.primary,
+                        unselectedIconColor = Gray,
+                        unselectedTextColor = Gray,
+                        indicatorColor = MaterialTheme.colorScheme.primary.copy(alpha = 0.15f)
                     )
                 )
             }
-        }
-    ) { paddingValues ->
-        when (selectedTab) {
-            0 -> HomeScreen(
-                viewModel = homeViewModel,
-                modifier = Modifier.padding(paddingValues)
-            )
-            1 -> FavoritesScreen(
-                viewModel = favoritesViewModel,
-                currentLanguage = currentLanguage,
-                modifier = Modifier.padding(paddingValues)
-            )
-            2 -> AboutScreen(
-                currentLanguage = currentLanguage,
-                modifier = Modifier.padding(paddingValues)
-            )
         }
     }
 }
