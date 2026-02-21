@@ -1,6 +1,5 @@
 package com.publicservices.pakistan.ui.components
 
-import android.Manifest
 import android.os.Build
 import androidx.compose.foundation.layout.*
 import androidx.compose.material.icons.Icons
@@ -14,22 +13,15 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Dialog
 import androidx.compose.foundation.BorderStroke
-import com.google.accompanist.permissions.ExperimentalPermissionsApi
-import com.google.accompanist.permissions.rememberPermissionState
 
-@OptIn(ExperimentalPermissionsApi::class, ExperimentalMaterial3Api::class)
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun NotificationPermissionDialog(
     language: String,
     onDismiss: () -> Unit,
+    onRequestPermission: () -> Unit,
     onPermissionGranted: () -> Unit
 ) {
-    val permissionState = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
-        rememberPermissionState(Manifest.permission.POST_NOTIFICATIONS)
-    } else {
-        null
-    }
-    
     Dialog(
         onDismissRequest = onDismiss,
         properties = androidx.compose.ui.window.DialogProperties(
@@ -114,10 +106,12 @@ fun NotificationPermissionDialog(
                     Button(
                         onClick = {
                             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
-                                permissionState?.launchPermissionRequest()
+                                onRequestPermission()
+                                onDismiss()
+                            } else {
+                                onPermissionGranted()
+                                onDismiss()
                             }
-                            onPermissionGranted()
-                            onDismiss()
                         },
                         modifier = Modifier.weight(1f)
                     ) {

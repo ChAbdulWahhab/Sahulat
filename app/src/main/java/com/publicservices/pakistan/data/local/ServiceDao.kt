@@ -12,6 +12,9 @@ interface ServiceDao {
     @Insert
     suspend fun insertService(service: ServiceEntity)
     
+    @Query("SELECT COUNT(*) FROM services")
+    suspend fun getServiceCount(): Int
+
     @Query("SELECT * FROM services ORDER BY name_en ASC")
     fun getAllServices(): Flow<List<ServiceEntity>>
     

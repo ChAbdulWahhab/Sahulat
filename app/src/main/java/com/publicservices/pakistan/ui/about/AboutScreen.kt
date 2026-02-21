@@ -1,7 +1,10 @@
 package com.publicservices.pakistan.ui.about
 
 import android.Manifest
+import android.content.Intent
+import android.net.Uri
 import android.os.Build
+import android.provider.Settings
 import android.widget.Toast
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
@@ -32,6 +35,7 @@ import androidx.compose.ui.unit.dp
 import androidx.core.content.ContextCompat
 import androidx.core.app.NotificationManagerCompat
 import android.content.pm.PackageManager
+import com.publicservices.pakistan.BuildConfig
 import com.publicservices.pakistan.utils.IntentHelper
 import com.publicservices.pakistan.utils.NotificationScheduler
 import com.publicservices.pakistan.utils.PreferencesManager
@@ -94,15 +98,16 @@ fun AboutScreen(
         
         Spacer(modifier = Modifier.height(32.dp))
         
-        // Modern Disclaimer Card
+        // Important Notice: soft tint
         Card(
             modifier = Modifier.fillMaxWidth(),
-            shape = androidx.compose.foundation.shape.RoundedCornerShape(20.dp),
+            shape = androidx.compose.foundation.shape.RoundedCornerShape(16.dp),
             colors = CardDefaults.cardColors(
-                containerColor = MaterialTheme.colorScheme.errorContainer.copy(alpha = 0.5f)
+                containerColor = MaterialTheme.colorScheme.surfaceVariant
             ),
+
             border = BorderStroke(0.dp, Color.Transparent),
-            elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
+            elevation = CardDefaults.cardElevation(defaultElevation = 0.dp)
         ) {
             Column(
                 modifier = Modifier.padding(20.dp),
@@ -110,9 +115,9 @@ fun AboutScreen(
             ) {
                 Row(verticalAlignment = Alignment.CenterVertically) {
                     Icon(
-                        Icons.Default.Warning, 
+                        Icons.Default.Warning,
                         contentDescription = null,
-                        tint = MaterialTheme.colorScheme.error,
+                        tint = MaterialTheme.colorScheme.primary,
                         modifier = Modifier.size(20.dp)
                     )
                     Spacer(modifier = Modifier.width(8.dp))
@@ -120,7 +125,7 @@ fun AboutScreen(
                         text = if (currentLanguage == "ur") "ضروری اعلان" else "Important Notice",
                         style = MaterialTheme.typography.titleMedium,
                         fontWeight = FontWeight.Medium,
-                        color = MaterialTheme.colorScheme.onErrorContainer
+                        color = MaterialTheme.colorScheme.onSurface
                     )
                 }
 
@@ -138,23 +143,21 @@ fun AboutScreen(
                     )
 
                     points.forEach { point ->
-                        if (currentLanguage == "ur") {
-                            DisclaimerPointUrdu(point)
-                        } else {
-                            DisclaimerPoint(point)
-                        }
+                        if (currentLanguage == "ur") DisclaimerPointUrdu(point) else DisclaimerPoint(point)
                     }
                 }
             }
         }
         
-        Spacer(modifier = Modifier.height(32.dp))
+        Spacer(modifier = Modifier.height(24.dp))
         
-        // Manage Notifications (list-style entry)
+        // Manage Notifications + Open system settings
         ManageNotificationsEntry(
             currentLanguage = currentLanguage,
             context = context
         )
+        Spacer(modifier = Modifier.height(12.dp))
+        NotificationSettingsEntry(currentLanguage = currentLanguage, context = context)
         
         Spacer(modifier = Modifier.height(32.dp))
         
@@ -163,18 +166,18 @@ fun AboutScreen(
         
         Spacer(modifier = Modifier.height(32.dp))
         
-        // App Info Section
+        // App Info Section (version from BuildConfig)
         Card(
             modifier = Modifier.fillMaxWidth(),
             shape = androidx.compose.foundation.shape.RoundedCornerShape(20.dp),
-            colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceVariant),
+            colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
             border = BorderStroke(0.dp, Color.Transparent),
             elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
         ) {
             Column(modifier = Modifier.padding(16.dp)) {
             InfoRow(
                 label = if (currentLanguage == "ur") "ورژن" else "Version",
-                value = "1.0.0"
+                value = "${BuildConfig.VERSION_NAME} (${BuildConfig.VERSION_CODE})"
             )
             Divider(
                 modifier = Modifier.padding(vertical = 8.dp),
@@ -207,12 +210,8 @@ fun AboutScreen(
 @Composable
 private fun DisclaimerPoint(text: String) {
     Row(verticalAlignment = Alignment.Top) {
-        Text("• ", style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onErrorContainer)
-        Text(
-            text = text,
-            style = MaterialTheme.typography.bodySmall,
-            color = MaterialTheme.colorScheme.onErrorContainer.copy(alpha = 0.9f)
-        )
+        Text("• ", style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
+        Text(text = text, style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
     }
 }
 
@@ -226,10 +225,10 @@ private fun DisclaimerPointUrdu(text: String) {
         Text(
             text = text,
             style = MaterialTheme.typography.bodySmall,
-            color = MaterialTheme.colorScheme.onErrorContainer.copy(alpha = 0.9f),
+            color = MaterialTheme.colorScheme.onSurfaceVariant,
             textAlign = TextAlign.End
         )
-        Text(" •", style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onErrorContainer)
+        Text(" •", style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
     }
 }
 
@@ -292,7 +291,7 @@ private fun ManageNotificationsEntry(
         },
         modifier = Modifier.fillMaxWidth(),
         shape = androidx.compose.foundation.shape.RoundedCornerShape(20.dp),
-        color = MaterialTheme.colorScheme.surfaceVariant,
+        color = MaterialTheme.colorScheme.surface,
         border = BorderStroke(0.dp, Color.Transparent)
     ) {
         Row(
@@ -331,6 +330,64 @@ private fun ManageNotificationsEntry(
 }
 
 @Composable
+private fun NotificationSettingsEntry(
+    currentLanguage: String,
+    context: android.content.Context
+) {
+    Surface(
+        onClick = {
+            val intent = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+                Intent(Settings.ACTION_APP_NOTIFICATION_SETTINGS).apply {
+                    putExtra(Settings.EXTRA_APP_PACKAGE, context.packageName)
+                }
+            } else {
+                Intent(Settings.ACTION_APPLICATION_DETAILS_SETTINGS).apply {
+                    data = Uri.parse("package:${context.packageName}")
+                }
+            }
+            context.startActivity(intent)
+        },
+        modifier = Modifier.fillMaxWidth(),
+        shape = androidx.compose.foundation.shape.RoundedCornerShape(20.dp),
+        color = MaterialTheme.colorScheme.surface,
+        border = BorderStroke(0.dp, Color.Transparent)
+    ) {
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(20.dp),
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.spacedBy(16.dp)
+        ) {
+            Icon(
+                imageVector = Icons.Default.Settings,
+                contentDescription = null,
+                tint = MaterialTheme.colorScheme.primary,
+                modifier = Modifier.size(24.dp)
+            )
+            Column(modifier = Modifier.weight(1f)) {
+                Text(
+                    text = if (currentLanguage == "ur") "سسٹم نوٹیفکیشن سیٹنگز" else "Open notification settings",
+                    style = MaterialTheme.typography.titleMedium,
+                    fontWeight = FontWeight.Medium,
+                    color = MaterialTheme.colorScheme.onSurface
+                )
+                Text(
+                    text = if (currentLanguage == "ur") "اپنی ڈیوائس پر نوٹیفکیشنز آن/بند کریں" else "Enable or revoke notifications in system settings",
+                    style = MaterialTheme.typography.bodySmall,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                )
+            }
+            Icon(
+                imageVector = Icons.Default.ChevronRight,
+                contentDescription = null,
+                tint = MaterialTheme.colorScheme.onSurfaceVariant
+            )
+        }
+    }
+}
+
+@Composable
 private fun StatusCheckerGuide(currentLanguage: String) {
     val context = LocalContext.current
     var isExpanded by remember { mutableStateOf(false) }
@@ -339,7 +396,7 @@ private fun StatusCheckerGuide(currentLanguage: String) {
         modifier = Modifier.fillMaxWidth(),
         shape = androidx.compose.foundation.shape.RoundedCornerShape(20.dp),
         colors = CardDefaults.cardColors(
-            containerColor = MaterialTheme.colorScheme.surfaceVariant
+            containerColor = MaterialTheme.colorScheme.surface
         ),
         border = BorderStroke(0.dp, Color.Transparent),
         elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)

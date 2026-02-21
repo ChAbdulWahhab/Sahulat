@@ -4,12 +4,10 @@ import android.content.Context
 import androidx.room.Database
 import androidx.room.Room
 import androidx.room.RoomDatabase
-import androidx.sqlite.db.SupportSQLiteDatabase
-import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.launch
+import kotlinx.coroutines.runBlocking
 
-@Database(entities = [ServiceEntity::class], version = 1, exportSchema = false)
+@Database(entities = [ServiceEntity::class], version = 2, exportSchema = false)
 abstract class ServiceDatabase : RoomDatabase() {
     
     abstract fun serviceDao(): ServiceDao
@@ -25,22 +23,15 @@ abstract class ServiceDatabase : RoomDatabase() {
                     ServiceDatabase::class.java,
                     "service_database"
                 )
-                    .addCallback(DatabaseCallback(context))
                     .fallbackToDestructiveMigration()
                     .build()
-                INSTANCE = instance
-                instance
-            }
-        }
-        
-        private class DatabaseCallback(private val context: Context) : RoomDatabase.Callback() {
-            override fun onCreate(db: SupportSQLiteDatabase) {
-                super.onCreate(db)
-                INSTANCE?.let { database ->
-                    CoroutineScope(Dispatchers.IO).launch {
-                        populateDatabase(database.serviceDao())
+                runBlocking(Dispatchers.IO) {
+                    if (instance.serviceDao().getServiceCount() == 0) {
+                        populateDatabase(instance.serviceDao())
                     }
                 }
+                INSTANCE = instance
+                instance
             }
         }
         
@@ -72,11 +63,12 @@ abstract class ServiceDatabase : RoomDatabase() {
                 
                 // NATIONAL EMERGENCY
                 ServiceEntity(0, "Pakistan Emergency (911)", "پاکستان ایمرجنسی", "Unified emergency helpline", "متحدہ ایمرجنسی ہیلپ لائن", "911", "CALL", "EMERGENCY", false, "emergency", "Call for immediate help", "فوری مدد کے لیے کال کریں"),
+                ServiceEntity(0, "Disaster Management (PDMA)", "آفات کے انتظام (پی ڈی ایم اے)", "Disaster management helpline", "آفات کے انتظام کی ہیلپ لائن", "1129", "CALL", "EMERGENCY", false, "warning", "Call for disaster management", "آفات کے انتظام کے لیے کال کریں"),
                 ServiceEntity(0, "Police Emergency", "پولیس ایمرجنسی", "Police assistance", "پولیس کی مدد", "15", "CALL", "EMERGENCY", false, "local_police", "Call for police help", "پولیس کی مدد کے لیے کال کریں"),
                 ServiceEntity(0, "Rescue 1122", "ایمبولینس", "Emergency medical services", "ایمرجنسی طبی خدمات", "1122", "CALL", "EMERGENCY", false, "local_hospital", "Call for rescue/ambulance", "ریسکیو کے لیے کال کریں"),
                 ServiceEntity(0, "Fire Brigade", "فائر بریگیڈ", "Fire emergency", "آگ کی ایمرجنسی", "16", "CALL", "EMERGENCY", false, "local_fire_department", "Call for fire emergency", "آگ کی صورت میں کال کریں"),
-                ServiceEntity(0, "Motorway Police", "موٹر وے پولیس", "Highway assistance", "شاہراہ کی مدد", "130", "CALL", "EMERGENCY", false, "local_shipping", "Call for motorway help", "موٹر وے پولیس کے لیے کال کریں"),
-                ServiceEntity(0, "Cyber Crime", "سائبر کرائم", "Report online fraud", "آن لائن دھوکہ دہی کی رپورٹ", "1991", "CALL", "CYBER", false, "security", "Call to report cyber crime", "سائبر کرائم کی رپورٹ کے لیے کال کریں"),
+                ServiceEntity(0, "National Highway & Motorway Police", "نیشنل ہائی وے اور موٹر وے پولیس", "Highway and motorway assistance", "ہائی وے اور موٹر وے کی مدد", "130", "CALL", "TRAVEL", false, "local_shipping", "Call for highway or motorway help", "ہائی وے یا موٹر وے پولیس کے لیے کال کریں"),
+                ServiceEntity(0, "Cyber Crime (FIA)", "سائبر کرائم (ایف آئی اے)", "Report cyber crime and online fraud", "سائبر کرائم اور آن لائن دھوکہ دہی کی رپورٹ", "1991", "CALL", "CYBER", false, "security", "Call to report cyber crime", "سائبر کرائم کی رپورٹ کے لیے کال کریں"),
                 ServiceEntity(0, "Anti Corruption", "انسداد بدعنوانی", "Report corruption", "بدعنوانی کی رپورٹ", "1033", "CALL", "CYBER", false, "report", "Call to report corruption", "بدعنوانی کی اطلاع کے لیے کال کریں"),
                 
                 // AMBULANCE SERVICES
@@ -85,14 +77,16 @@ abstract class ServiceDatabase : RoomDatabase() {
                 ServiceEntity(0, "Aman Ambulance", "امان ایمبولینس", "Aman Health Care", "امان ہیلتھ کیئر", "1021", "CALL", "AMBULANCE", false, "airport_shuttle", "Call for Aman ambulance", "امان ایمبولینس کے لیے کال کریں"),
                 
                 // WOMEN & CHILD SUPPORT
+                ServiceEntity(0, "Child Protection (CPWB)", "بچوں کے تحفظ (سی پی ڈبلیو بی)", "Child protection helpline", "بچوں کے تحفظ کی ہیلپ لائن", "1121", "CALL", "WOMEN_CHILD", false, "support", "Call for child protection", "بچوں کے تحفظ کے لیے کال کریں"),
                 ServiceEntity(0, "Madadgar Women & Children", "مددگار خواتین اور بچے", "Women and child helpline", "خواتین اور بچوں کی مدد", "1098", "CALL", "WOMEN_CHILD", false, "support", "Call for help", "مدد کے لیے کال کریں"),
                 ServiceEntity(0, "Aurat Foundation", "عورت فاؤنڈیشن", "Women's rights support", "خواتین کے حقوق", "0800-22266", "CALL", "WOMEN_CHILD", false, "female", "Call for women rights support", "خواتین کے حقوق کی مدد کے لیے کال کریں"),
                 
                 // UTILITY SERVICES
-                ServiceEntity(0, "Gas Helpline", "گیس ہیلپ لائن", "Gas supply issues", "گیس کی فراہمی", "1199", "CALL", "UTILITY", false, "propane", "Call for gas issues", "گیس کی شکایات کے لیے کال کریں"),
+                ServiceEntity(0, "Gas Emergencies (SNGPL/SSGC)", "گیس ایمرجنسی (ایس این جی پی ایل/ایس ایس جی سی)", "Gas supply emergencies", "گیس کی ایمرجنسی", "1199", "CALL", "UTILITY", false, "propane", "Call for gas emergencies", "گیس ایمرجنسی کے لیے کال کریں"),
                 ServiceEntity(0, "K-Electric Emergency", "کے الیکٹرک ایمرجنسی", "Electricity emergency", "بجلی کی ایمرجنسی", "118", "CALL", "UTILITY", false, "electrical_services", "Call for K-Electric help", "کے الیکٹرک کے لیے کال کریں"),
                 ServiceEntity(0, "Bomb Disposal (Karachi)", "بم ڈسپوزل", "Bomb disposal squad", "بم ڈسپوزل اسکواڈ", "39212690", "CALL", "UTILITY", false, "warning", "Call for bomb disposal", "بم ڈسپوزل کے لیے کال کریں"),
-                ServiceEntity(0, "CPLC Karachi", "سی پی ایل سی", "Citizen Police Liaison", "شہری پولیس رابطہ", "35682222", "CALL", "UTILITY", false, "contact_phone", "Call for CPLC help", "سی پی ایل سی کے لیے کال کریں")
+                ServiceEntity(0, "CPLC Karachi", "سی پی ایل سی", "Citizen Police Liaison", "شہری پولیس رابطہ", "35682222", "CALL", "UTILITY", false, "contact_phone", "Call for CPLC help", "سی پی ایل سی کے لیے کال کریں"),
+                ServiceEntity(0, "Railways Inquiry", "ریلوے انکوائری", "Pakistan Railways inquiry and booking", "پاکستان ریلوے انکوائری اور بکنگ", "117", "CALL", "TRANSPORT", false, "train", "Call for railways inquiry", "ریلوے انکوائری کے لیے کال کریں")
             )
             
             // Insert all services

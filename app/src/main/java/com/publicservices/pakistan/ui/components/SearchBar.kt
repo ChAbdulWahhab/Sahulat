@@ -12,6 +12,7 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
 
 @Composable
@@ -23,7 +24,7 @@ fun SearchBar(
     compact: Boolean = false,
     onDismiss: (() -> Unit)? = null
 ) {
-    val horizontalPadding = if (compact) 12.dp else 16.dp
+    val horizontalPadding = if (compact) 6.dp else 12.dp
     val verticalPadding = if (compact) 8.dp else 16.dp
     
     Row(
@@ -62,7 +63,10 @@ fun SearchBar(
             shape = RoundedCornerShape(if (compact) 20.dp else 12.dp),
             colors = OutlinedTextFieldDefaults.colors(
                 focusedBorderColor = MaterialTheme.colorScheme.primary,
-                unfocusedBorderColor = MaterialTheme.colorScheme.outline
+                unfocusedBorderColor = MaterialTheme.colorScheme.outline,
+                focusedContainerColor = Color.Transparent,
+                unfocusedContainerColor = Color.Transparent,
+                disabledContainerColor = Color.Transparent
             ),
             textStyle = if (compact) MaterialTheme.typography.bodyMedium else MaterialTheme.typography.bodyLarge
         )

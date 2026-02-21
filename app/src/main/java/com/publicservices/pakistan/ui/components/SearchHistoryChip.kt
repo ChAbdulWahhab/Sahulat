@@ -7,13 +7,11 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.History
 import androidx.compose.material3.*
-import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
-import com.publicservices.pakistan.ui.theme.SurfaceContainerLow
 
 @Composable
 fun SearchHistoryChip(
@@ -24,7 +22,7 @@ fun SearchHistoryChip(
     Surface(
         modifier = modifier.clickable(onClick = onClick),
         shape = RoundedCornerShape(20.dp),
-        color = if (isSystemInDarkTheme()) MaterialTheme.colorScheme.surfaceVariant else SurfaceContainerLow,
+        color = MaterialTheme.colorScheme.surface,
         border = BorderStroke(0.dp, Color.Transparent)
     ) {
         Row(

@@ -19,10 +19,8 @@ import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.ui.unit.dp
 import com.publicservices.pakistan.data.DidYouKnowFacts
-import com.publicservices.pakistan.ui.theme.SurfaceContainerLow
 import kotlinx.coroutines.delay
 
 @Composable
@@ -51,7 +49,7 @@ fun DidYouKnowCarousel(
             .padding(horizontal = 16.dp, vertical = 8.dp),
         shape = RoundedCornerShape(20.dp),
         colors = CardDefaults.cardColors(
-            containerColor = if (isSystemInDarkTheme()) MaterialTheme.colorScheme.surfaceVariant else SurfaceContainerLow
+            containerColor = MaterialTheme.colorScheme.surface
         ),
         border = BorderStroke(0.dp, Color.Transparent),
         elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)

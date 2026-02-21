@@ -9,6 +9,7 @@ import java.util.concurrent.TimeUnit
 object NotificationScheduler {
     private const val WORK_NAME = "daily_tip_notification"
     
+    /** Schedules periodic daily tips via WorkManager (no foreground service). Only call when user has opted in; aligns with Play policy on non-disruptive messaging. */
     fun scheduleDailyNotifications(context: Context, language: String) {
         val workManager = WorkManager.getInstance(context)
         

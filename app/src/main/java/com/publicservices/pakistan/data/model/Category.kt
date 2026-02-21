@@ -9,7 +9,9 @@ enum class ServiceCategory(val nameEn: String, val nameUr: String) {
     CYBER("Cyber & Security", "سائبر اور سیکیورٹی"),
     AMBULANCE("Ambulance Services", "ایمبولینس خدمات"),
     WOMEN_CHILD("Women & Child Support", "خواتین اور بچوں کی مدد"),
-    UTILITY("Utility Services", "یوٹیلٹی خدمات");
+    UTILITY("Utility Services", "یوٹیلٹی خدمات"),
+    TRAVEL("Travel", "سفر"),
+    TRANSPORT("Transport", "ٹرانسپورٹ");
     
     fun getName(language: String): String {
         return if (language == "ur") nameUr else nameEn

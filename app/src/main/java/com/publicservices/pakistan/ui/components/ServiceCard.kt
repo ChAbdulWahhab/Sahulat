@@ -1,29 +1,49 @@
 package com.publicservices.pakistan.ui.components
 
-import androidx.compose.animation.*
-import androidx.compose.animation.core.*
-import androidx.compose.foundation.background
+import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.expandVertically
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.fadeOut
+import androidx.compose.animation.shrinkVertically
+import androidx.compose.animation.core.tween
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.*
+import androidx.compose.material.icons.filled.Call
+import androidx.compose.material.icons.filled.Favorite
+import androidx.compose.material.icons.filled.Sms
+import androidx.compose.material.icons.outlined.ContentCopy
 import androidx.compose.material.icons.outlined.FavoriteBorder
+import androidx.compose.material.icons.rounded.Dialpad
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.scale
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalHapticFeedback
 import androidx.compose.ui.hapticfeedback.HapticFeedbackType
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import androidx.compose.foundation.isSystemInDarkTheme
 import com.publicservices.pakistan.data.model.Service
+import com.publicservices.pakistan.data.model.ServiceCategory
 import com.publicservices.pakistan.data.model.ServiceType
 import com.publicservices.pakistan.ui.theme.AccentRed
-import com.publicservices.pakistan.ui.theme.SurfaceContainerLow
+
+private fun ServiceCategory.tagEmoji(): String = when (this) {
+    ServiceCategory.ALL -> "📋"
+    ServiceCategory.IDENTITY -> "🆔"
+    ServiceCategory.VEHICLE -> "🚗"
+    ServiceCategory.WELFARE -> "🤝"
+    ServiceCategory.EMERGENCY -> "⚠️"
+    ServiceCategory.CYBER -> "🛡️"
+    ServiceCategory.AMBULANCE -> "🚑"
+    ServiceCategory.WOMEN_CHILD -> "👶"
+    ServiceCategory.UTILITY -> "🔥"
+    ServiceCategory.TRAVEL -> "🚗"
+    ServiceCategory.TRANSPORT -> "🚆"
+}
 
 @Composable
 fun ServiceCard(
@@ -37,256 +57,121 @@ fun ServiceCard(
 ) {
     var isExpanded by remember { mutableStateOf(false) }
     val haptic = LocalHapticFeedback.current
-
-    // Animation for card expansion
-    val cardElevation by animateFloatAsState(
-        targetValue = if (isExpanded) 8f else 0f,
-        animationSpec = spring(
-            dampingRatio = Spring.DampingRatioMediumBouncy,
-            stiffness = Spring.StiffnessLow
-        ),
-        label = "card_elevation"
-    )
+    val tagLabel = "${service.category.tagEmoji()} ${service.category.getName(language)}"
     
     Card(
         modifier = modifier
             .fillMaxWidth()
-            .padding(horizontal = 16.dp, vertical = 8.dp)
+            .padding(horizontal = 16.dp, vertical = 6.dp)
             .clickable { isExpanded = !isExpanded },
-        shape = androidx.compose.foundation.shape.RoundedCornerShape(24.dp), // 24dp as per requirements
-        elevation = CardDefaults.cardElevation(defaultElevation = cardElevation.dp),
+        shape = RoundedCornerShape(16.dp),
+        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
         border = androidx.compose.foundation.BorderStroke(0.dp, Color.Transparent),
-        colors = CardDefaults.cardColors(
-            containerColor = if (isSystemInDarkTheme()) MaterialTheme.colorScheme.surface else SurfaceContainerLow
-        )
+        elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
     ) {
-        Column(
-            modifier = Modifier.padding(16.dp)
-        ) {
-            // Header: Icon + Title/Description + Favorite
+        Column(modifier = Modifier.padding(14.dp)) {
             Row(
                 modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.SpaceBetween,
                 verticalAlignment = Alignment.CenterVertically
             ) {
-                // Service Icon (Circle background for modern look)
-                Box(
-                    modifier = Modifier
-                        .size(48.dp)
-                        .background(
-                            color = MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.4f),
-                            shape = androidx.compose.foundation.shape.CircleShape
-                        ),
-                    contentAlignment = Alignment.Center
-                ) {
-                    Icon(
-                        imageVector = when(service.serviceType) {
-                            ServiceType.SMS -> Icons.Default.Chat
-                            ServiceType.CALL -> Icons.Default.Phone
-                            ServiceType.USSD -> Icons.Default.Dialpad
-                            else -> Icons.Default.MiscellaneousServices
-                        },
-                        contentDescription = null,
-                        tint = MaterialTheme.colorScheme.primary,
-                        modifier = Modifier.size(24.dp)
-                    )
-                }
-
-                Spacer(modifier = Modifier.width(16.dp))
-
-                Column(modifier = Modifier.weight(1f)) {
-                    Text(
-                        text = service.getName(language),
-                        style = MaterialTheme.typography.titleMedium,
-                        fontWeight = FontWeight.Bold,
-                        color = MaterialTheme.colorScheme.onSurface
-                    )
-                    Text(
-                        text = service.getDescription(language),
-                        style = MaterialTheme.typography.bodySmall,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant,
-                        maxLines = 1,
-                        overflow = androidx.compose.ui.text.style.TextOverflow.Ellipsis
-                    )
-                }
-                
-                IconButton(
-                    onClick = {
-                        haptic.performHapticFeedback(HapticFeedbackType.LongPress)
-                        onFavoriteToggle()
-                    },
-                    modifier = Modifier.size(40.dp)
-                ) {
-                    Icon(
-                        imageVector = if (service.isFavorite) 
-                            Icons.Filled.Favorite 
-                        else 
-                            Icons.Outlined.FavoriteBorder,
-                        contentDescription = "Favorite",
-                        tint = if (service.isFavorite) AccentRed else MaterialTheme.colorScheme.primary,
-                        modifier = Modifier.size(22.dp)
-                    )
-                }
-            }
-            
-            // Instruction Banner (Softer design)
-            val instructions = service.getInstructions(language)
-            if (instructions.isNotEmpty()) {
-                Spacer(modifier = Modifier.height(12.dp))
                 Surface(
-                    modifier = Modifier.fillMaxWidth(),
-                    color = MaterialTheme.colorScheme.primary.copy(alpha = 0.05f),
-                    shape = androidx.compose.foundation.shape.RoundedCornerShape(8.dp)
-                ) {
-                    Row(
-                        modifier = Modifier.padding(10.dp),
-                        verticalAlignment = Alignment.CenterVertically
-                    ) {
-                        Icon(
-                            imageVector = Icons.Default.Info,
-                            contentDescription = null,
-                            tint = MaterialTheme.colorScheme.primary.copy(alpha = 0.7f),
-                            modifier = Modifier.size(16.dp)
-                        )
-                        Spacer(modifier = Modifier.width(10.dp))
-                        Text(
-                            text = instructions,
-                            style = MaterialTheme.typography.labelMedium,
-                            fontWeight = FontWeight.SemiBold,
-                            color = MaterialTheme.colorScheme.primary
-                        )
-                    }
-                }
-            }
-            
-            // Phone Number Section (Always visible)
-            Spacer(modifier = Modifier.height(12.dp))
-            Surface(
-                onClick = { haptic.performHapticFeedback(HapticFeedbackType.LongPress); onCopy() },
-                color = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f),
-                shape = androidx.compose.foundation.shape.RoundedCornerShape(32.dp)
-            ) {
-                Row(
-                    verticalAlignment = Alignment.CenterVertically,
-                    modifier = Modifier.padding(horizontal = 12.dp, vertical = 8.dp)
+                    shape = RoundedCornerShape(8.dp),
+                    color = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.8f)
                 ) {
                     Text(
-                        text = service.serviceNumber,
-                        style = MaterialTheme.typography.bodyLarge,
-                        fontWeight = FontWeight.ExtraBold,
-                        color = MaterialTheme.colorScheme.onSurface,
-                        letterSpacing = 1.sp
+                        text = tagLabel,
+                        style = MaterialTheme.typography.labelSmall,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                        modifier = Modifier.padding(horizontal = 8.dp, vertical = 4.dp)
                     )
-                    Spacer(modifier = Modifier.width(8.dp))
+                }
+                IconButton(
+                    onClick = { haptic.performHapticFeedback(HapticFeedbackType.LongPress); onFavoriteToggle() },
+                    modifier = Modifier.size(36.dp)
+                ) {
                     Icon(
-                        imageVector = Icons.Default.ContentCopy,
-                        contentDescription = "Copy",
-                        modifier = Modifier.size(16.dp),
-                        tint = MaterialTheme.colorScheme.primary
+                        imageVector = if (service.isFavorite) Icons.Filled.Favorite else Icons.Outlined.FavoriteBorder,
+                        contentDescription = "Favorite",
+                        tint = if (service.isFavorite) AccentRed else MaterialTheme.colorScheme.onSurfaceVariant,
+                        modifier = Modifier.size(20.dp)
                     )
                 }
             }
+            Spacer(modifier = Modifier.height(6.dp))
+            Text(
+                text = service.getName(language),
+                style = MaterialTheme.typography.titleMedium,
+                fontWeight = FontWeight.Bold,
+                color = MaterialTheme.colorScheme.onSurface
+            )
+            Text(
+                text = service.getDescription(language),
+                style = MaterialTheme.typography.bodySmall,
+                fontSize = 12.sp,
+                color = MaterialTheme.colorScheme.onSurfaceVariant
+            )
             
-            // Expandable Action Buttons Section
             AnimatedVisibility(
                 visible = isExpanded,
-                enter = fadeIn(animationSpec = tween(300)) + 
-                       scaleIn(initialScale = 0.8f, animationSpec = spring(
-                           dampingRatio = Spring.DampingRatioMediumBouncy,
-                           stiffness = Spring.StiffnessLow
-                       )),
-                exit = fadeOut(animationSpec = tween(200)) + 
-                      scaleOut(targetScale = 0.8f, animationSpec = tween(200))
+                enter = expandVertically(animationSpec = tween(220)) + fadeIn(animationSpec = tween(220)),
+                exit = shrinkVertically(animationSpec = tween(180)) + fadeOut(animationSpec = tween(180))
             ) {
                 Column(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .padding(top = 16.dp),
-                    horizontalAlignment = Alignment.CenterHorizontally,
-                    verticalArrangement = Arrangement.spacedBy(12.dp)
+                        .padding(top = 12.dp),
+                    verticalArrangement = Arrangement.spacedBy(10.dp)
                 ) {
-                    // Action Buttons Row
+                    val description = service.getInstructions(language).ifEmpty { service.getDescription(language) }
+                    if (description.isNotEmpty()) {
+                        Text(
+                            text = description,
+                            style = MaterialTheme.typography.bodySmall,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant
+                        )
+                    }
                     Row(
-                        horizontalArrangement = Arrangement.spacedBy(16.dp),
-                        modifier = Modifier.fillMaxWidth()
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.SpaceBetween,
+                        verticalAlignment = Alignment.CenterVertically
                     ) {
-                        // Call Button
-                        if (service.serviceType == ServiceType.CALL || 
-                            service.serviceType == ServiceType.USSD || 
-                            service.serviceType == ServiceType.BOTH) {
-                            ActionButton(
-                                icon = if (service.serviceType == ServiceType.USSD) 
-                                    Icons.Default.Dialpad 
-                                else 
-                                    Icons.Default.Call,
-                                label = if (language == "ur") "کال" else "Call",
-                                onClick = { haptic.performHapticFeedback(HapticFeedbackType.LongPress); onCall() },
-                                modifier = Modifier.weight(1f)
-                            )
+                        // Left: Copy icon + helpline number only (no "Copy" text)
+                        OutlinedButton(
+                            onClick = { haptic.performHapticFeedback(HapticFeedbackType.LongPress); onCopy() },
+                            modifier = Modifier.height(44.dp)
+                        ) {
+                            Icon(Icons.Outlined.ContentCopy, contentDescription = null, modifier = Modifier.size(18.dp))
+                            Spacer(modifier = Modifier.width(6.dp))
+                            Text(service.serviceNumber, style = MaterialTheme.typography.labelLarge)
                         }
-                        
-                        // Message/SMS Button
-                        if (service.serviceType == ServiceType.SMS || 
-                            service.serviceType == ServiceType.BOTH) {
-                            ActionButton(
-                                icon = Icons.Default.Send,
-                                label = if (language == "ur") "پیغام" else "Message",
-                                onClick = { haptic.performHapticFeedback(HapticFeedbackType.LongPress); onSendSms() },
-                                modifier = Modifier.weight(1f)
-                            )
+                        Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                            if (service.serviceType == ServiceType.CALL || service.serviceType == ServiceType.USSD || service.serviceType == ServiceType.BOTH) {
+                                Button(
+                                    onClick = { haptic.performHapticFeedback(HapticFeedbackType.LongPress); onCall() },
+                                    modifier = Modifier.height(44.dp),
+                                    colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.primary, contentColor = MaterialTheme.colorScheme.onPrimary)
+                                ) {
+                                    Icon(if (service.serviceType == ServiceType.USSD) Icons.Rounded.Dialpad else Icons.Default.Call, contentDescription = null, modifier = Modifier.size(20.dp))
+                                    Spacer(modifier = Modifier.width(6.dp))
+                                    Text(if (language == "ur") "ابھی کال کریں" else "Call Now", style = MaterialTheme.typography.labelLarge)
+                                }
+                            }
+                            if (service.serviceType == ServiceType.SMS || service.serviceType == ServiceType.BOTH) {
+                                Button(
+                                    onClick = { haptic.performHapticFeedback(HapticFeedbackType.LongPress); onSendSms() },
+                                    modifier = Modifier.height(44.dp),
+                                    colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.primary, contentColor = MaterialTheme.colorScheme.onPrimary)
+                                ) {
+                                    Icon(Icons.Default.Sms, contentDescription = null, modifier = Modifier.size(18.dp))
+                                    Spacer(modifier = Modifier.width(6.dp))
+                                    Text(if (language == "ur") "پیغام" else "Message", style = MaterialTheme.typography.labelLarge)
+                                }
+                            }
                         }
                     }
                 }
             }
-        }
-    }
-}
-
-@Composable
-private fun ActionButton(
-    icon: androidx.compose.ui.graphics.vector.ImageVector,
-    label: String,
-    onClick: () -> Unit,
-    modifier: Modifier = Modifier
-) {
-    // Scale animation for button
-    val scale by animateFloatAsState(
-        targetValue = 1f,
-        animationSpec = spring(
-            dampingRatio = Spring.DampingRatioMediumBouncy,
-            stiffness = Spring.StiffnessMedium
-        ),
-        label = "button_scale"
-    )
-    
-    Surface(
-        onClick = onClick,
-        modifier = modifier
-            .height(56.dp)
-            .scale(scale),
-        shape = androidx.compose.foundation.shape.RoundedCornerShape(16.dp),
-        color = MaterialTheme.colorScheme.primary,
-        shadowElevation = 4.dp
-    ) {
-        Row(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(horizontal = 16.dp),
-            horizontalArrangement = Arrangement.Center,
-            verticalAlignment = Alignment.CenterVertically
-        ) {
-            Icon(
-                imageVector = icon,
-                contentDescription = label,
-                tint = Color.White,
-                modifier = Modifier.size(20.dp)
-            )
-            Spacer(modifier = Modifier.width(8.dp))
-            Text(
-                text = label,
-                style = MaterialTheme.typography.labelLarge,
-                fontWeight = FontWeight.Bold,
-                color = Color.White
-            )
         }
     }
 }
